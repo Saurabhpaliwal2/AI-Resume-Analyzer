@@ -11,7 +11,8 @@ const Login = ({ setAuth }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:9090/api/users/login', { email, password });
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
+      const response = await axios.post(`${apiBase}/api/users/login`, { email, password });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data));
       setAuth(true);

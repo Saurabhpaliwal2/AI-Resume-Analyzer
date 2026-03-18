@@ -44,7 +44,8 @@ function App() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await axios.post('http://localhost:9090/api/resumes/analyze', formData, {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
+      const response = await axios.post(`${apiBase}/api/resumes/analyze`, formData, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setResults(response.data);

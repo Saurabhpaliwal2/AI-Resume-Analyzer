@@ -10,7 +10,8 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:9090/api/users/register', formData);
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
+      await axios.post(`${apiBase}/api/users/register`, formData);
       navigate('/login');
     } catch (err) {
       setError('Registration failed');

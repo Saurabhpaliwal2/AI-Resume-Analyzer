@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/resumes")
-@CrossOrigin(origins = {"http://localhost:5173", "https://ai-resume-analyzer-pearl-seven.vercel.app"})
 public class ResumeController {
 
     @Autowired

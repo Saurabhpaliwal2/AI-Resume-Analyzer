@@ -24,11 +24,6 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
-  const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('geminiApiKey') || '');
-
-  useEffect(() => {
-    localStorage.setItem('geminiApiKey', geminiApiKey);
-  }, [geminiApiKey]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -45,7 +40,6 @@ function App() {
     const formData = new FormData();
     formData.append('resume', resume);
     formData.append('jobDescription', jobDescription);
-    formData.append('geminiApiKey', geminiApiKey);
 
     const token = localStorage.getItem('token');
 
@@ -130,24 +124,14 @@ function App() {
                 LOAD EXAMPLE
               </button>
             </div>
-            <div className="mb-3">
-              <label className="text-white-50 small text-uppercase ls-wide mb-2 d-block">Optional: Gemini API ID (Key)</label>
-              <input 
-                type="password"
-                className="form-control auth-form-input shadow-none mb-3" 
-                placeholder="Enter your Gemini API Key here..."
-                value={geminiApiKey}
-                onChange={(e) => setGeminiApiKey(e.target.value)}
-              />
               <textarea 
                 className="form-control auth-form-input shadow-none" 
-                rows="5" 
+                rows="8" 
                 placeholder="Paste target job description to match, or leave empty for a general resume analysis..."
                 value={jobDescription}
                 onChange={(e) => setJobDescription(e.target.value)}
                 style={{ resize: 'none' }}
               />
-            </div>
           </div>
         </div>
 

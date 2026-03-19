@@ -153,7 +153,6 @@ class AnalysisRequest(BaseModel):
     resumeBase64: str
     resumeName: str
     jobDescription: str
-    geminiApiKey: Optional[str] = None
 
 class AnalysisResponse(BaseModel):
     skillMatchPercentage: int
@@ -181,8 +180,8 @@ async def analyze_resume(request: AnalysisRequest):
 
         print(f"[INFO] Extracted {len(resume_text)} characters from {request.resumeName}")
 
-        # Resolve Gemini API key with priority: Request > Env (GEMINI_API_KEY) > Env (API_ID)
-        api_key = request.geminiApiKey or os.getenv("GEMINI_API_KEY") or os.getenv("API_ID")
+        # Check for Gemini API key
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("API_ID")
         
         if api_key and api_key not in ["your_api_key_here", ""]:
             # Use Gemini AI for advanced analysis

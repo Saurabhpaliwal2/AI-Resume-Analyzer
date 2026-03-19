@@ -43,7 +43,6 @@ public class ResumeController {
     @PostMapping("/analyze")
     public AnalysisResult analyze(@RequestParam("resume") MultipartFile file, 
                                   @RequestParam("jobDescription") String jobDescription,
-                                  @RequestParam(value = "geminiApiKey", required = false) String geminiApiKey,
                                   @RequestHeader("Authorization") String token) throws IOException {
         
         logger.info("Received analysis request for file: {}, user token: {}", file.getOriginalFilename(), token.substring(0, Math.min(token.length(), 15)) + "...");
@@ -64,7 +63,6 @@ public class ResumeController {
         body.put("resumeBase64", Base64.getEncoder().encodeToString(file.getBytes()));
         body.put("resumeName", file.getOriginalFilename());
         body.put("jobDescription", jobDescription);
-        body.put("geminiApiKey", geminiApiKey);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 

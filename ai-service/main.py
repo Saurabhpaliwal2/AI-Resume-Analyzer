@@ -98,7 +98,18 @@ def extract_skills(text: str) -> set:
     words = word_tokenize(text_lower)
     meaningful_words = [w for w in words if w not in stop_words and len(w) > 1]
     
-    for word in meaningful_words:
+    # Pre-process: lowercase and remove punctuation
+    text_lower = text.lower()
+    
+    # Check for multi-word skills first
+    for skill in TECH_SKILLS:
+        if " " in skill or "." in skill or "-" in skill:
+            if skill in text_lower:
+                found_skills.add(skill)
+    
+    # Then check for single-word skills
+    words = set(re.findall(r'\w+', text_lower))
+    for word in words:
         if word in TECH_SKILLS:
             found_skills.add(word)
 
@@ -199,66 +210,73 @@ async def analyze_resume(request: AnalysisRequest):
         print(f"[INFO] Using Smart Keyword Analysis for: {request.resumeName}")
         
         resume_skills = extract_skills(resume_text)
-        jd_skills = extract_skills(request.jobDescription)
+        is_standalone = not request.jobDescription.strip()
         
-        print(f"[INFO] Resume skills found: {resume_skills}")
-        print(f"[INFO] JD skills required: {jd_skills}")
-        
-        matched = resume_skills & jd_skills
-        missing = jd_skills - resume_skills
-        extra_resume = resume_skills - jd_skills  # Skills in resume but not in JD
-        
-        # Calculate match percentage
-        if not jd_skills:
-            score = 50  # Default if no recognizable skills in JD
+        if is_standalone:
+            print(f"[INFO] Standalone analysis (no JD provided)")
+            jd_skills = set()
+            matched = resume_skills
+            missing = set()
+            # Standalone score based on skill density and variety
+            score = min(100, 40 + len(resume_skills) * 8)
+            missing_display = ["Add a job description for specific match analysis"]
         else:
-            score = int((len(matched) / len(jd_skills)) * 100)
-        
-        # Cap at 100
+            jd_skills = extract_skills(request.jobDescription)
+            print(f"[INFO] JD skills required: {jd_skills}")
+            matched = resume_skills & jd_skills
+            missing = jd_skills - resume_skills
+            score = int((len(matched) / len(jd_skills)) * 100) if jd_skills else 50
+            missing_display = sorted([s.title() for s in missing]) if missing else ["All required skills present!"]
+
+        extra_resume = resume_skills - jd_skills if not is_standalone else set()
         score = min(score, 100)
         
-        print(f"[INFO] Match: {len(matched)}/{len(jd_skills)} = {score}%")
+        print(f"[INFO] Resume skills found: {resume_skills}")
+        print(f"[INFO] Final Score: {score}%")
         
         # Generate suggestions
         suggestions = []
-        if missing:
-            missing_list = list(missing)
-            suggestions.append(f"Add these skills to your resume if you have experience: {', '.join(missing_list[:5])}")
-        if extra_resume:
-            extra_list = list(extra_resume)
-            suggestions.append(f"Your additional strengths ({', '.join(extra_list[:3])}) could differentiate you from competitors.")
-        if score < 50:
-            suggestions.append("Consider tailoring your resume more closely to this specific job description.")
-        if score >= 70:
-            suggestions.append("Strong match! Focus on quantifying your achievements with numbers and metrics.")
-        suggestions.append("Ensure your resume is ATS-friendly with clear section headers and consistent formatting.")
+        if is_standalone:
+            suggestions.append("Your resume shows a strong set of core technical skills.")
+            suggestions.append("To get a more accurate match score, please paste a specific job description.")
+            if len(resume_skills) < 5:
+                suggestions.append("Consider adding more technical keywords to improve ATS visibility.")
+        else:
+            if missing:
+                missing_list = list(missing)
+                suggestions.append(f"Add these missing skills if you have them: {', '.join(missing_list[:5])}")
+            if extra_resume:
+                extra_list = list(extra_resume)
+                suggestions.append(f"Your additional strengths ({', '.join(extra_list[:3])}) are great differentiators.")
+            if score < 50:
+                suggestions.append("Consider tailoring your resume more closely to this specific job description.")
+            if score >= 70:
+                suggestions.append("Strong match! Focus on quantifying achievements with metrics.")
         
-        # Generate job recommendations based on actual matched skills
+        suggestions.append("Ensure your resume is ATS-friendly with clear headers and consistent formatting.")
+        
+        # Generate job recommendations
         job_recs = generate_job_recommendations(matched, missing, score)
-        
-        # Format skill names nicely (capitalize)
-        matched_display = sorted([s.title() for s in matched]) if matched else ["No direct skill matches found"]
-        missing_display = sorted([s.title() for s in missing]) if missing else ["All required skills present!"]
         
         # Build per-skill confidence scores
         skill_scores = {}
         resume_lower = resume_text.lower()
-        # Score matched skills based on frequency in resume
-        for skill in matched:
-            count = resume_lower.count(skill)
-            confidence = min(100, 40 + count * 20)  # base 40% + 20% per mention
+        
+        # For display, use top 10 skills if standalone
+        display_skills = list(matched)[:10] if is_standalone else list(matched)
+        
+        for skill in display_skills:
+            count = resume_lower.count(skill.lower())
+            confidence = min(100, 45 + count * 15)
             skill_scores[skill.title()] = confidence
-        # Score missing skills as 0
-        for skill in missing:
-            skill_scores[skill.title()] = 0
-        # Also score extra resume skills at moderate confidence
-        for skill in list(extra_resume)[:5]:
-            count = resume_lower.count(skill)
-            skill_scores[skill.title()] = min(100, 30 + count * 15)
+            
+        if not is_standalone:
+            for skill in list(missing):
+                skill_scores[skill.title()] = 0
 
         return {
             "skillMatchPercentage": score,
-            "matchedSkills": matched_display,
+            "matchedSkills": sorted([s.title() for s in matched]),
             "missingSkills": missing_display,
             "improvementSuggestions": suggestions,
             "jobRecommendations": job_recs,

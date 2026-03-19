@@ -32,7 +32,7 @@ function App() {
   };
 
   const handleAnalyze = async () => {
-    if (!resume || !jobDescription) return;
+    if (!resume) return;
     setIsAnalyzing(true);
     setError(null);
     setResults(null);
@@ -127,7 +127,7 @@ function App() {
             <textarea 
               className="form-control auth-form-input shadow-none" 
               rows="8" 
-              placeholder="Paste the target job description here to analyze the match..."
+              placeholder="Paste target job description to match, or leave empty for a general resume analysis..."
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               style={{ resize: 'none' }}
@@ -135,20 +135,18 @@ function App() {
           </div>
         </div>
 
-        <div className="col-12 mt-5">
           <button 
             className="btn btn-primary btn-lg w-100 py-4 fw-bold glow-btn fs-5"
             onClick={handleAnalyze}
-            disabled={isAnalyzing || !resume || !jobDescription}
+            disabled={isAnalyzing || !resume}
           >
             {isAnalyzing ? (
               <span className="d-flex align-items-center justify-content-center">
                 <span className="spinner-border spinner-border-sm me-3" role="status" aria-hidden="true"></span>
                 Processing with Gemini AI...
               </span>
-            ) : 'Generate AI Match Report'}
+            ) : (jobDescription ? 'Generate AI Match Report' : 'Run General Resume Analysis')}
           </button>
-        </div>
       </div>
 
       {error && (

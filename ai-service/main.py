@@ -5,7 +5,7 @@ import io
 import json
 import os
 import re
-from typing import List
+from typing import List, Optional
 import google.generativeai as genAI
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
@@ -153,6 +153,7 @@ class AnalysisRequest(BaseModel):
     resumeBase64: str
     resumeName: str
     jobDescription: str
+    geminiApiKey: Optional[str] = None
 
 class AnalysisResponse(BaseModel):
     skillMatchPercentage: int
@@ -180,11 +181,15 @@ async def analyze_resume(request: AnalysisRequest):
 
         print(f"[INFO] Extracted {len(resume_text)} characters from {request.resumeName}")
 
-        # Check for Gemini API key
-        api_key = os.getenv("GEMINI_API_KEY")
-        if api_key and api_key != "your_api_key_here":
+        # Resolve Gemini API key with priority: Request > Env (GEMINI_API_KEY) > Env (API_ID)
+        api_key = request.geminiApiKey or os.getenv("GEMINI_API_KEY") or os.getenv("API_ID")
+        
+        if api_key and api_key not in ["your_api_key_here", ""]:
             # Use Gemini AI for advanced analysis
             model = genAI.GenerativeModel('gemini-1.5-flash')
+            
+            # Configure genAI with the resolved key
+            genAI.configure(api_key=api_key)
             
             is_standalone = not request.jobDescription.strip()
             

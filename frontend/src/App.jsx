@@ -119,7 +119,7 @@ function App() {
               <button 
                 className="btn btn-sm text-primary p-0 border-0 fw-bold" 
                 style={{ fontSize: '0.8rem', letterSpacing: '0.05em' }}
-                onClick={() => setJobDescription("We are looking for a Full Stack Developer with 3+ years of experience in React.js, Java Spring Boot, and Python. The ideal candidate should have experience with MySQL, RESTful APIs, and AI integrations (like Gemini or OpenAI). Strong problem-solving skills and teamwork are essential. Knowledge of HTML, CSS, JavaScript, and React Bootstrap is also required.")}
+                onClick={() => setJobDescription("We are looking for a Full Stack Developer in React.js, Java Spring Boot, and Python. The ideal candidate should have experience with MySQL, RESTful APIs, and AI integrations (like Gemini or OpenAI). Strong problem-solving skills and teamwork are essential. Knowledge of HTML, CSS, JavaScript, and React Bootstrap is also required.")}
               >
                 LOAD EXAMPLE
               </button>

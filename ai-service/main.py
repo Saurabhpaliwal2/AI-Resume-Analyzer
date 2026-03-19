@@ -161,6 +161,7 @@ class AnalysisResponse(BaseModel):
     improvementSuggestions: List[str]
     jobRecommendations: List[str]
     skillScores: dict = {}
+    profileData: dict = {}
 
 @app.post("/analyze", response_model=AnalysisResponse)
 async def analyze_resume(request: AnalysisRequest):
@@ -184,21 +185,51 @@ async def analyze_resume(request: AnalysisRequest):
         if api_key and api_key != "your_api_key_here":
             # Use Gemini AI for advanced analysis
             model = genAI.GenerativeModel('gemini-1.5-flash')
-            prompt = f"""
-            Analyze the following resume against the job description.
             
-            Resume: {resume_text}
-            Job Description: {request.jobDescription}
+            is_standalone = not request.jobDescription.strip()
             
-            Provide response strictly in JSON format:
-            {{
-                "skillMatchPercentage": (number 0-100),
-                "matchedSkills": [list of matching skills],
-                "missingSkills": [list of missing skills],
-                "improvementSuggestions": [list of specific suggestions],
-                "jobRecommendations": [list of suitable job titles]
-            }}
-            """
+            if is_standalone:
+                prompt = f"""
+                Analyze the following resume and extract key profile details.
+                Resume: {resume_text}
+                
+                Provide response strictly in JSON format:
+                {{
+                    "skillMatchPercentage": (General score 0-100 based on resume quality),
+                    "matchedSkills": [list of all identified technical skills],
+                    "missingSkills": ["Provide job description for target analysis"],
+                    "improvementSuggestions": [list of general resume improvements],
+                    "jobRecommendations": [list of suitable roles based on skills],
+                    "profileData": {{
+                        "name": "Extracted Name",
+                        "email": "Extracted Email",
+                        "summary": "3-sentence professional summary",
+                        "experience": "Brief experience overview (e.g. 5+ years in Web Dev)"
+                    }}
+                }}
+                """
+            else:
+                prompt = f"""
+                Analyze the following resume against the job description.
+                Resume: {resume_text}
+                Job Description: {request.jobDescription}
+                
+                Provide response strictly in JSON format:
+                {{
+                    "skillMatchPercentage": (number 0-100),
+                    "matchedSkills": [list of matching skills],
+                    "missingSkills": [list of missing skills],
+                    "improvementSuggestions": [list of specific suggestions],
+                    "jobRecommendations": [list of suitable job titles],
+                    "profileData": {{
+                        "name": "Extracted Name",
+                        "email": "Extracted Email",
+                        "summary": "Quick summary of candidate's fit for THIS job",
+                        "experience": "Relevant experience summary"
+                    }}
+                }}
+                """
+            
             try:
                 response = model.generate_content(prompt)
                 clean_json = response.text.replace("```json", "").replace("```", "").strip()
@@ -274,13 +305,25 @@ async def analyze_resume(request: AnalysisRequest):
             for skill in list(missing):
                 skill_scores[skill.title()] = 0
 
+        # Logic to extract basic profile data if Gemini failed
+        email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', resume_text)
+        email = email_match.group(0) if email_match else "Not found"
+        
+        profile_data = {
+            "name": request.resumeName.split(".")[0],
+            "email": email,
+            "summary": "Professional profile based on identified technical skills.",
+            "experience": "Experience details available in full PDF text."
+        }
+
         return {
             "skillMatchPercentage": score,
             "matchedSkills": sorted([s.title() for s in matched]),
             "missingSkills": missing_display,
             "improvementSuggestions": suggestions,
             "jobRecommendations": job_recs,
-            "skillScores": skill_scores
+            "skillScores": skill_scores,
+            "profileData": profile_data
         }
 
     except Exception as e:

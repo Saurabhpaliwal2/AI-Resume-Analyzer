@@ -240,6 +240,37 @@ function App() {
         return (
         <div className="results-section mt-5 animate-in">
           <h3 className="gradient-text text-center mb-4 fs-4">📊 AI Analysis Report</h3>
+          
+          {/* Resume Profile Card */}
+          {results.profileData && (
+            <div className="glass-card p-4 mb-4 animate-in" style={{ animationDelay: '0.1s' }}>
+              <div className="row align-items-center">
+                <div className="col-md-7 border-end border-white-10">
+                  <div className="d-flex align-items-center mb-2">
+                    <span className="fs-3 me-3">👤</span>
+                    <h4 className="mb-0 text-white">{results.profileData.participant_name || results.profileData.name || 'Candidate Profile'}</h4>
+                  </div>
+                  <p className="text-primary small mb-3">
+                    <span className="me-3">📧 {results.profileData.email || 'Email not found'}</span>
+                    <span>⏳ {results.profileData.experience || 'Experience not specified'}</span>
+                  </p>
+                  <div className="p-3 bg-white-5 rounded-3">
+                    <p className="small mb-0 text-white-50" style={{ lineHeight: '1.6' }}>
+                      <strong className="text-white d-block mb-1 small text-uppercase ls-wide">Professional Summary</strong>
+                      {results.profileData.summary || 'No summary extracted from resume.'}
+                    </p>
+                  </div>
+                </div>
+                <div className="col-md-5 ps-md-4 mt-3 mt-md-0">
+                  <div className="text-center">
+                    <div className="display-4 fw-bold gradient-text mb-0">{score}%</div>
+                    <div className="text-white-50 small text-uppercase ls-wide">Analyze Confidence</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="row g-4">
 
             {/* Doughnut - Overall Match */}

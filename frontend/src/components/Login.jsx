@@ -16,7 +16,7 @@ const Login = ({ setAuth }) => {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data));
       setAuth(true);
-      navigate('/');
+      window.location.href = '/';
     } catch (err) {
       if (!err.response) {
         setError('Network Error: Cannot connect to server at ' + apiBase);

@@ -18,7 +18,13 @@ const Login = ({ setAuth }) => {
       setAuth(true);
       navigate('/');
     } catch (err) {
-      setError('Invalid credentials');
+      if (!err.response) {
+        setError('Network Error: Cannot connect to server at ' + apiBase);
+      } else if (err.response.status === 401) {
+        setError('Invalid email or password');
+      } else {
+        setError(err.response.data?.message || 'An unexpected error occurred');
+      }
     }
   };
 
@@ -31,37 +37,37 @@ const Login = ({ setAuth }) => {
               <h1 className="gradient-text mb-2">Welcome Back</h1>
               <p className="text-white-50">Log in to continue your career journey</p>
             </div>
-            
+
             {error && <div className="alert alert-danger border-0 bg-danger-subtle text-danger mb-4 text-center">{error}</div>}
-            
+
             <form onSubmit={handleLogin}>
               <div className="mb-4">
                 <label className="form-label text-white-50 ms-1 small fw-bold text-uppercase">Email Address</label>
-                <input 
-                  type="email" 
-                  className="form-control auth-form-input shadow-none" 
+                <input
+                  type="email"
+                  className="form-control auth-form-input shadow-none"
                   placeholder="name@example.com"
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  required 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
               <div className="mb-5">
                 <label className="form-label text-white-50 ms-1 small fw-bold text-uppercase">Password</label>
-                <input 
-                  type="password" 
-                  className="form-control auth-form-input shadow-none" 
+                <input
+                  type="password"
+                  className="form-control auth-form-input shadow-none"
                   placeholder="••••••••"
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
               </div>
               <button type="submit" className="btn btn-primary w-100 py-3 glow-btn">
                 Sign In
               </button>
             </form>
-            
+
             <div className="mt-5 text-center">
               <span className="text-white-50">Don't have an account? </span>
               <Link to="/register" className="text-primary text-decoration-none fw-bold hover-underline">Register Now</Link>

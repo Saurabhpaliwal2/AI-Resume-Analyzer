@@ -14,7 +14,11 @@ const Register = () => {
       await axios.post(`${apiBase}/api/users/register`, formData);
       navigate('/login');
     } catch (err) {
-      setError('Registration failed');
+      if (!err.response) {
+        setError('Network Error: Cannot connect to server at ' + apiBase);
+      } else {
+        setError(err.response.data?.message || 'Registration failed');
+      }
     }
   };
 

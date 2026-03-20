@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const Register = () => {
+const Register = ({ apiBase }) => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -10,7 +10,6 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
       await axios.post(`${apiBase}/api/users/register`, formData);
       navigate('/login');
     } catch (err) {

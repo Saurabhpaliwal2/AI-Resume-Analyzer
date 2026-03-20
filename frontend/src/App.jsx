@@ -19,6 +19,10 @@ ChartJS.register(
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('token'));
+  const getDefaultApiBase = () => {
+    return localStorage.getItem('customApiBase') || import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
+  };
+  const [apiBase, setApiBase] = useState(getDefaultApiBase());
   const [resume, setResume] = useState(null);
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -44,7 +48,6 @@ function App() {
     const token = localStorage.getItem('token');
 
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
       const response = await axios.post(`${apiBase}/api/resumes/analyze`, formData, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -374,8 +377,8 @@ function App() {
         <div className="blob blob-3"></div>
       </div>
       <Routes>
-        <Route path="/login" element={isAuth ? <Navigate to="/" /> : <Login setAuth={setIsAuth} />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={isAuth ? <Navigate to="/" /> : <Login setAuth={setIsAuth} apiBase={apiBase} setApiBase={setApiBase} />} />
+        <Route path="/register" element={<Register apiBase={apiBase} />} />
         <Route path="/" element={isAuth ? <Dashboard /> : <Navigate to="/login" />} />
       </Routes>
     </Router>

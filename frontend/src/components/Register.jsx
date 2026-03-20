@@ -17,7 +17,10 @@ const Register = () => {
       if (!err.response) {
         setError('Network Error: Cannot connect to server at ' + apiBase);
       } else {
-        setError(err.response.data?.message || 'Registration failed');
+        const msg = typeof err.response.data === 'string' 
+          ? err.response.data 
+          : err.response.data?.message || 'Registration failed';
+        setError(msg);
       }
     }
   };

@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -28,7 +30,9 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
         if (repository.findByEmail(user.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already registered");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Email already registered");
+            return ResponseEntity.badRequest().body(response);
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         repository.save(user);
@@ -42,6 +46,8 @@ public class UserController {
             String token = jwtUtils.generateToken(userOpt.get().getEmail());
             return ResponseEntity.ok(new AuthResponse(token, userOpt.get().getEmail(), userOpt.get().getName()));
         }
-        return ResponseEntity.status(401).body("Invalid credentials");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Invalid credentials");
+        return ResponseEntity.status(401).body(response);
     }
 }

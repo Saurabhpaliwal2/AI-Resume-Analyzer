@@ -20,7 +20,17 @@ ChartJS.register(
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('token'));
   const getDefaultApiBase = () => {
-    return localStorage.getItem('customApiBase') || import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
+    const saved = localStorage.getItem('customApiBase');
+    if (saved) return saved;
+    
+    // Auto-detect: if we are visiting via IP (like 192.168.x.x), use that same IP for the backend
+    const hostname = window.location.hostname;
+    const isIp = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
+    if (isIp) {
+      return `http://${hostname}:9090`;
+    }
+
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
   };
   const [apiBase, setApiBase] = useState(getDefaultApiBase());
   const [resume, setResume] = useState(null);
